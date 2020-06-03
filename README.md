@@ -1,5 +1,5 @@
-# xray
+# X-Ray
 
-> [AWS X-Ray](https://aws.amazon.com/xray/) daemon client for Rustlang applications
+[AWS X-Ray daemon](https://docs.aws.amazon.com/xray/latest/devguide/xray-daemon.html) client for Rust.
 
-Doug Tangren (softprops) 2018
+Based on https://github.com/softprops/xray.
