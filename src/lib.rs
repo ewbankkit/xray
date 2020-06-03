@@ -14,7 +14,6 @@ mod epoch;
 mod error;
 mod header;
 mod hexbytes;
-mod lambda;
 mod segment;
 mod segment_id;
 mod trace_id;
