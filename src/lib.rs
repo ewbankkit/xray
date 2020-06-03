@@ -74,10 +74,7 @@ impl Client {
     }
 
     /// send a segment to the xray daemon this client is connected to
-    pub fn send<S>(
-        &self,
-        data: &S,
-    ) -> Result<()>
+    pub fn send<S>(&self, data: &S) -> Result<()>
     where
         S: Serialize,
     {
