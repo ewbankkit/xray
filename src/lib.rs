@@ -5,10 +5,9 @@
 use log::warn;
 use serde::Serialize;
 use std::{
-    convert::TryInto,
-    fmt::Display,
     net::{SocketAddr, UdpSocket},
     result::Result as StdResult,
+    str::FromStr,
     sync::Arc,
 };
 
@@ -34,23 +33,21 @@ pub struct Client {
     socket: Arc<UdpSocket>,
 }
 
+impl FromStr for Client {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let addr: SocketAddr = s.parse()?;
+        Self::new(addr)
+    }
+}
+
 impl Client {
     const HEADER: &'static [u8] = br#"{"format": "json", "version": 1}\n"#;
 
     /// Return a new X-Ray client connected
     /// to the provided `addr`
-    pub fn new<T>(addr: T) -> Result<Self>
-    where
-        T: TryInto<SocketAddr>,
-        T::Error: Display,
-    {
-        let addr = match addr.try_into() {
-            Ok(addr) => addr,
-            Err(e) => {
-                warn!("Unable to parse address: {}, falling back on default", e);
-                ([127, 0, 0, 1], 2000).into()
-            }
-        };
+    pub fn new(addr: SocketAddr) -> Result<Self> {
         let socket = Arc::new(UdpSocket::bind(&[([0, 0, 0, 0], 0).into()][..])?);
         socket.set_nonblocking(true)?;
         socket.connect(&addr)?;
