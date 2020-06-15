@@ -2,6 +2,7 @@
 //#![deny(warnings)]
 //! Provides a client interface for [AWS X-Ray](https://aws.amazon.com/xray/)
 
+use log::warn;
 use serde::Serialize;
 use std::{
     convert::TryInto,
@@ -46,7 +47,7 @@ impl Client {
         let addr = match addr.try_into() {
             Ok(addr) => addr,
             Err(e) => {
-                log::warn!("Unable to parse address: {}, falling back on default", e);
+                warn!("Unable to parse address: {}, falling back on default", e);
                 ([127, 0, 0, 1], 2000).into()
             }
         };
