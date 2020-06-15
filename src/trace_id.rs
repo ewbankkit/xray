@@ -2,6 +2,7 @@ use crate::{epoch::Seconds, hexbytes::Bytes};
 use rand::RngCore;
 use serde::{de, ser, Serializer};
 use std::fmt;
+
 /// Coorelates a string of spans together
 ///
 /// Users need only refer to displability

@@ -4,7 +4,8 @@
 
 use serde::Serialize;
 use std::{
-    env,
+    convert::TryInto,
+    fmt::Display,
     net::{SocketAddr, UdpSocket},
     result::Result as StdResult,
     sync::Arc,
@@ -32,31 +33,23 @@ pub struct Client {
     socket: Arc<UdpSocket>,
 }
 
-impl Default for Client {
-    /// Return a client configured to send trace data to an
-    /// address identified by a `AWS_XRAY_DAEMON_ADDRESS` env variable
-    /// or `127.0.0.1:2000`
-    fn default() -> Self {
-        // https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
-        // todo documment error handling
-        let addr: SocketAddr = env::var("AWS_XRAY_DAEMON_ADDRESS")
-            .ok()
-            .and_then(|value| value.parse::<SocketAddr>().ok())
-            .unwrap_or_else(|| {
-                log::trace!("No valid `AWS_XRAY_DAEMON_ADDRESS` env variable detected falling back on default");
-                ([127, 0, 0, 1], 2000).into()
-            });
-
-        Client::new(addr).expect("failed to connect to socket")
-    }
-}
-
 impl Client {
     const HEADER: &'static [u8] = br#"{"format": "json", "version": 1}\n"#;
 
     /// Return a new X-Ray client connected
     /// to the provided `addr`
-    pub fn new(addr: SocketAddr) -> Result<Self> {
+    pub fn new<T>(addr: T) -> Result<Self>
+    where
+        T: TryInto<SocketAddr>,
+        T::Error: Display,
+    {
+        let addr = match addr.try_into() {
+            Ok(addr) => addr,
+            Err(e) => {
+                log::warn!("Unable to parse address: {}, falling back on default", e);
+                ([127, 0, 0, 1], 2000).into()
+            }
+        };
         let socket = Arc::new(UdpSocket::bind(&[([0, 0, 0, 0], 0).into()][..])?);
         socket.set_nonblocking(true)?;
         socket.connect(&addr)?;
